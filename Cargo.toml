@@ -1,0 +1,18 @@
+[package]
+name = "frame"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cortex-m-rt = "0.7.3"
+cortex-m = "0.7.7"
+panic-halt = "0.2.0"
+rp-pico = "0.8.0"
+embedded-hal = "0.2.7"
+fugit = "0.3.6"
+embedded-graphics = "0.7.1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
