@@ -168,6 +168,7 @@ where
         self.wait_until_idle();
     }
 
+    #[allow(dead_code)]
     pub fn sleep(&mut self) {
         // Deep sleep mode (0x10) - from datasheet page 15
         self.send_command(0x10);

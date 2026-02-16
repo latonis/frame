@@ -53,8 +53,8 @@ fn main() -> ! {
     let mut _led_pin = pins.led.into_push_pull_output();
     let delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
 
-    let button_next = pins.gpio12.into_pull_up_input();
-    let button_select = pins.gpio13.into_pull_up_input();
+    let button_next = pins.gpio12.into_pull_up_input();    // Next in menu
+    let button_select = pins.gpio13.into_pull_up_input();  // Select/Back
 
     let spi_mosi = pins.gpio19.into_function::<FunctionSpi>();
     let spi_sck = pins.gpio18.into_function::<FunctionSpi>();
@@ -65,7 +65,7 @@ fn main() -> ! {
         &mut pac.RESETS,
         clocks.peripheral_clock.freq(),
         1_000_000u32.Hz(),
-        &MODE_0,
+        MODE_0,
     );
 
     let cs = pins.gpio17.into_push_pull_output();
@@ -81,8 +81,7 @@ fn main() -> ! {
     let mut last_next = true;
     let mut last_select = true;
 
-    let menu_buffer = menu.draw_menu();
-    display.write_framebuffer(menu_buffer);
+    display.write_framebuffer(menu.draw_menu());
     display.update();
 
     loop {
@@ -93,31 +92,45 @@ fn main() -> ! {
             AppState::Menu => {
                 if next_pressed && !last_next {
                     menu.next_image();
-                    let menu_buffer = menu.draw_menu();
-                    display.write_framebuffer(menu_buffer);
+                    display.write_framebuffer(menu.draw_menu());
                     display.update();
-                    display.delay.delay_ms(200);
+                    display.delay.delay_ms(250);
                 }
 
                 if select_pressed && !last_select {
                     let image_data = menu.get_selected_image();
 
+                    display.clear(0xFF);
+                    display.update();
+                    display.delay.delay_ms(1000);  // 1 second black
+
+                    display.clear(0x00);
+                    display.update();
+                    display.delay.delay_ms(1000);  // 1 second white
+
                     display.write_framebuffer(image_data);
                     display.update();
 
                     app_state = AppState::ShowingImage;
-                    display.delay.delay_ms(200);
+                    display.delay.delay_ms(250);
                 }
             }
 
             AppState::ShowingImage => {
                 if select_pressed && !last_select {
-                    let menu_buffer = menu.draw_menu();
-                    display.write_framebuffer(menu_buffer);
+                    display.clear(0xFF);
+                    display.update();
+                    display.delay.delay_ms(1000);
+
+                    display.clear(0x00);
+                    display.update();
+                    display.delay.delay_ms(1000);
+
+                    display.write_framebuffer(menu.draw_menu());
                     display.update();
 
                     app_state = AppState::Menu;
-                    display.delay.delay_ms(200);
+                    display.delay.delay_ms(250);
                 }
             }
         }
